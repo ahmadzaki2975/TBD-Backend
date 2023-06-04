@@ -13,7 +13,6 @@ const db = knex({
 });
 
 exports.getBooks = (req, res) => {
-  console.log(process.env.POSTGRES_HOST)
   try {
     const query = "SELECT * FROM book";
 
