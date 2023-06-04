@@ -1,5 +1,5 @@
 const knex = require("knex");
-const dotenv = require('dotenv');
+const dotenv = require("dotenv");
 dotenv.config();
 
 const db = knex({
@@ -14,18 +14,59 @@ const db = knex({
 
 exports.getBooks = (req, res) => {
   try {
-    const query = "SELECT * FROM book";
+    const query = `
+    SELECT book.*, author.authorname 
+    FROM Book 
+    INNER JOIN BookAuthorMapping ON Book.BookID = BookAuthorMapping.BookID 
+    INNER JOIN Author ON BookAuthorMapping.AuthorID = Author.AuthorID`;
+    db.raw(query)
+      .then((data) => {
+        console.log(data.rows);
+        res.status(200).json(data.rows);
+      })
+      .catch((err) => {
+        console.log(err);
+        res.status(500).json(err);
+      });
+  } catch (err) {
+    console.log(err);
+  }
+};
 
-    const result = db.raw(query).then((data) => {
-      console.log(data.rows);
-      res.status(200).json(data.rows);
-    })
-    .catch((err) => {
-      console.log(err);
-      res.status(500).json(err);
-    })
-
-
+exports.getBookById = (req, res) => {
+  const { id } = req.params;
+  try {
+    // select the book, join with the author and genre
+    const query = `
+    SELECT book.*, author.authorname, genre.genrename
+    FROM Book 
+    INNER JOIN BookAuthorMapping ON Book.BookID = BookAuthorMapping.BookID 
+    INNER JOIN Author ON BookAuthorMapping.AuthorID = Author.AuthorID
+    INNER JOIN BookGenreMapping ON Book.BookID = BookGenreMapping.BookID
+    INNER JOIN Genre ON BookGenreMapping.GenreID = Genre.GenreID
+    WHERE Book.BookID = ${id}
+    ;`;
+    db.raw(query)
+      .then((data) => {
+        console.log(data.rows);
+        const genres = [];
+        data.rows.forEach((row) => {
+          genres.push(row.genrename);
+        });
+        res.status(200).json({
+          bookname: data.rows[0].bookname,
+          pages: data.rows[0].pages,
+          price: data.rows[0].price,
+          publicationyear: data.rows[0].publicationyear,
+          publishername: data.rows[0].publishername,
+          authorname: data.rows[0].authorname,
+          genres,
+        });
+      })
+      .catch((err) => {
+        console.log(err);
+        res.status(500).json(err);
+      });
   } catch (err) {
     console.log(err);
   }
