@@ -93,4 +93,46 @@ exports.updateBookById = (req, res) => {
   } catch (err) {
     console.log(err);
   }
+};
+
+exports.deleteBookById = (req, res) => {
+  const { id } = req.params;
+  try {
+    const query = `
+    DELETE FROM Book
+    WHERE BookID = ${id}
+    ;`;
+    db.raw(query)
+      .then((data) => {
+        console.log(data);
+        res.status(200).json(data);
+      })
+      .catch((err) => {
+        console.log(err);
+        res.status(500).json(err);
+      });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+exports.addNewBook = (req, res) => {
+  const { bookname, pages, price, publicationyear, publishername } = req.body;
+  try {
+    const query = `
+    INSERT INTO Book (bookname, pages, price, publicationyear, publishername)
+    VALUES ('${bookname}', ${pages}, ${price}, ${publicationyear}, '${publishername}')
+    ;`;
+    db.raw(query)
+      .then((data) => {
+        console.log(data);
+        res.status(200).json(data);
+      })
+      .catch((err) => {
+        console.log(err);
+        res.status(500).json(err);
+      });
+  } catch (err) {
+    console.log(err);
+  }
 }
