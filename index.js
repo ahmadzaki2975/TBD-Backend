@@ -21,6 +21,8 @@ const bookRoutes = require("./routes/books");
 app.use("/books", bookRoutes);
 const authorRoutes = require("./routes/author");
 app.use("/authors", authorRoutes);
+const publisherRoutes = require("./routes/publisher");
+app.use("/publishers", publisherRoutes);
 
 app.listen(5000, () => {
   console.log("Server is running on port 5000");
