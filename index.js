@@ -1,6 +1,7 @@
 const express = require("express");
 const dotenv = require("dotenv");
 dotenv.config();
+const bodyParser = require('body-parser')
 const app = express();
 const cors = require("cors");
 // allow cross-origin requests
@@ -11,6 +12,8 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+app.use(bodyParser.json())
 
 app.get("/", (req, res) => {
   res.send("API TBD v0.0.1 - Ahmad Zaki Akmal");
