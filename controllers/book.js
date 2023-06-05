@@ -71,3 +71,26 @@ exports.getBookById = (req, res) => {
     console.log(err);
   }
 };
+
+exports.updateBookById = (req, res) => {
+  const { id } = req.params;
+  const { bookname, pages, price, publicationyear, publishername } = req.body;
+  try {
+    const query = `
+    UPDATE Book
+    SET bookname = '${bookname}', pages = ${pages}, price = ${price}, publicationyear = ${publicationyear}, publishername = '${publishername}'
+    WHERE BookID = ${id}
+    ;`;
+    db.raw(query)
+      .then((data) => {
+        console.log(data);
+        res.status(200).json(data);
+      })
+      .catch((err) => {
+        console.log(err);
+        res.status(500).json(err);
+      });
+  } catch (err) {
+    console.log(err);
+  }
+}
