@@ -18,7 +18,6 @@ exports.getAuthors = (req, res) => {
         SELECT * FROM Author`;
         db.raw(query)
         .then((data) => {
-            console.log(data.rows);
             res.status(200).json(data.rows);
         })
         .catch((err) => {
