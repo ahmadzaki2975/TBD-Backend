@@ -4,7 +4,12 @@ dotenv.config();
 const bodyParser = require('body-parser')
 const app = express();
 const cors = require("cors");
-// allow cross-origin requests
+const morgan = require("morgan");
+
+// ? Middleware
+app.use(morgan("dev"));
+
+// allow cors
 app.use(
   cors({
     origin: "*",
