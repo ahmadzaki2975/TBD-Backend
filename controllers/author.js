@@ -29,3 +29,22 @@ exports.getAuthors = (req, res) => {
         console.log(err);
     }
 }
+
+exports.getAuthorById = (req, res) => {
+    const { id } = req.params;
+    try {
+        const query = `
+        SELECT * FROM Author WHERE AuthorID = ${id}`;
+        db.raw(query)
+        .then((data) => {
+            console.log(data.rows);
+            res.status(200).json(data.rows);
+        })
+        .catch((err) => {
+            console.log(err);
+            res.status(500).json(err);
+        });
+    } catch (err) {
+        console.log(err);
+    }
+}
