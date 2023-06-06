@@ -37,7 +37,7 @@ exports.getBookById = (req, res) => {
   try {
     // select the book, join with the author and genre
     const query = `
-    SELECT book.*, author.authorname, genre.genrename
+    SELECT book.*, author.authorname, author.authorid, genre.genrename
     FROM Book 
     INNER JOIN BookAuthorMapping ON Book.BookID = BookAuthorMapping.BookID 
     INNER JOIN Author ON BookAuthorMapping.AuthorID = Author.AuthorID
@@ -52,12 +52,14 @@ exports.getBookById = (req, res) => {
           genres.push(row.genrename);
         });
         res.status(200).json({
+          bookid: data.rows[0].bookid,
           bookname: data.rows[0].bookname,
           pages: data.rows[0].pages,
           price: data.rows[0].price,
           publicationyear: data.rows[0].publicationyear,
           publishername: data.rows[0].publishername,
           authorname: data.rows[0].authorname,
+          authorid: data.rows[0].authorid,
           genres,
         });
       })
@@ -70,27 +72,36 @@ exports.getBookById = (req, res) => {
   }
 };
 
-exports.updateBookById = (req, res) => {
+exports.updateBookById = async (req, res) => {
   const { id } = req.params;
-  const { bookname, pages, price, publicationyear, publishername } = req.body;
+  const { bookname, pages, price, publicationyear, publishername, authorid } = req.body;
+  if (!bookname || !pages || !price || !publicationyear || !publishername) {
+    return res.status(400).json("Incorrect form submission");
+  }
+  let trx; 
   try {
-    const query = `
-    UPDATE Book
-    SET bookname = '${bookname}', pages = ${pages}, price = ${price}, publicationyear = ${publicationyear}, publishername = '${publishername}'
-    WHERE BookID = ${id}
-    ;`;
-    db.raw(query)
-      .then((data) => {
-        res.status(200).json(data);
-      })
-      .catch((err) => {
-        console.log(err);
-        res.status(500).json(err);
-      });
+    trx = await db.transaction(); 
+    const bookQuery = `
+      UPDATE Book
+      SET bookname = '${bookname}', pages = ${pages}, price = ${price}, publicationyear = ${publicationyear}, publishername = '${publishername}'
+      WHERE BookID = ${id};`;
+    const bookAuthorMappingQuery = `
+      UPDATE BookAuthorMapping
+      SET AuthorID = ${authorid}
+      WHERE BookID = ${id};`;
+    await trx.raw(bookQuery);
+    await trx.raw(bookAuthorMappingQuery);
+    await trx.commit();
+    res.status(200).json({ message: 'Book updated successfully' });
   } catch (err) {
-    console.log(err);
+    console.error(err);
+    if (trx) {
+      await trx.rollback();
+    }
+    res.status(500).json({ error: 'Error updating book' });
   }
 };
+
 
 exports.deleteBookById = (req, res) => {
   const { id } = req.params;
