@@ -96,3 +96,24 @@ exports.postNewAuthor = async (req, res) => {
       });
   });
 };
+
+exports.deleteAuthorById = async (req, res) => {
+  const { id } = req.params;
+  const query = `DELETE FROM Author WHERE AuthorID = ${id}`;
+
+  db.transaction((trx) => {
+    trx
+      .raw(query)
+      .then((data) => {
+        trx.commit();
+        res.status(200).json("Author deleted");
+        return;
+      })
+      .catch((err) => {
+        console.log(err);
+        trx.rollback();
+        res.status(500).json(err);
+        return;
+      });
+  });
+};
