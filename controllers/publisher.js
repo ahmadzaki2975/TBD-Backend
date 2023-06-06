@@ -13,19 +13,60 @@ const db = knex({
 });
 
 exports.getPublishers = (req, res) => {
-    const query = `
+  const query = `
     SELECT * FROM Publisher`;
 
-    try {
-        db.raw(query)
-        .then((data) => {
-            res.status(200).json(data.rows);
-        })
-        .catch((err) => {
-            console.log(err);
-            res.status(500).json(err);
-        });
-    } catch (err) {
+  try {
+    db.raw(query)
+      .then((data) => {
+        res.status(200).json(data.rows);
+      })
+      .catch((err) => {
         console.log(err);
-    }
+        res.status(500).json(err);
+      });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+exports.getPublisherById = (req, res) => {
+  const { publishername } = req.params;
+
+  const query = `
+    SELECT * FROM Publisher WHERE PublisherName = '${publishername}'`;
+
+  db.transaction((trx) => {
+    trx
+      .raw(query)
+      .then((data) => {
+        res.status(200).json(data.rows);
+      })
+      .catch((err) => {
+        console.log(err);
+        res.status(500).json(err);
+      });
+  });
+};
+
+exports.deletePublisherById = (req, res) => {
+	const { publishername } = req.params;
+
+	const query = `
+		DELETE FROM Publisher WHERE publishername = '${publishername}'`;
+
+	db.transaction((trx) => {
+		trx
+			.raw(query)
+			.then((data) => {
+				trx.commit();
+				res.status(200).json(data.rows);
+				return;
+			})
+			.catch((err) => {
+				console.log(err);
+				trx.rollback();
+				res.status(500).json(err);
+			});
+	});
 }
