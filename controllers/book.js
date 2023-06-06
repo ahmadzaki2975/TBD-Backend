@@ -74,13 +74,14 @@ exports.getBookById = (req, res) => {
 
 exports.updateBookById = async (req, res) => {
   const { id } = req.params;
-  const { bookname, pages, price, publicationyear, publishername, authorid } = req.body;
+  const { bookname, pages, price, publicationyear, publishername, authorid } =
+    req.body;
   if (!bookname || !pages || !price || !publicationyear || !publishername) {
     return res.status(400).json("Incorrect form submission");
   }
-  let trx; 
+  let trx;
   try {
-    trx = await db.transaction(); 
+    trx = await db.transaction();
     const bookQuery = `
       UPDATE Book
       SET bookname = '${bookname}', pages = ${pages}, price = ${price}, publicationyear = ${publicationyear}, publishername = '${publishername}'
@@ -92,47 +93,47 @@ exports.updateBookById = async (req, res) => {
     await trx.raw(bookQuery);
     await trx.raw(bookAuthorMappingQuery);
     await trx.commit();
-    res.status(200).json({ message: 'Book updated successfully' });
+    res.status(200).json({ message: "Book updated successfully" });
   } catch (err) {
     console.error(err);
     if (trx) {
       await trx.rollback();
     }
-    res.status(500).json({ error: 'Error updating book' });
+    res.status(500).json({ error: "Error updating book" });
   }
 };
 
-
-exports.deleteBookById = (req, res) => {
+exports.deleteBookById = async (req, res) => {
   const { id } = req.params;
-  try {
+
+  await db.transaction(async (trx) => {
     const nullifyBookAuthorMappingQuery = `
-    UPDATE BookAuthorMapping
-    SET BookID = NULL
-    WHERE BookID = ${id}
-    ;`;
+        UPDATE BookAuthorMapping
+        SET BookID = NULL
+        WHERE BookID = ${id};`;
+
     const nullifyBookGenreMappingQuery = `
-    UPDATE BookGenreMapping
-    SET BookID = NULL
-    WHERE BookID = ${id}
-    ;`;
+        UPDATE BookGenreMapping
+        SET BookID = NULL
+        WHERE BookID = ${id};`;
+
     const query = `
-    DELETE FROM Book
-    WHERE BookID = ${id}
-    ;`;
-    db.raw(nullifyBookAuthorMappingQuery)
-      .then(() => db.raw(nullifyBookGenreMappingQuery))
-      .then(() => db.raw(query))
-      .then((data) => {
-        res.status(200).json(data);
-      })
-      .catch((err) => {
-        console.log(err);
-        res.status(500).json(err);
-      });
-  } catch (err) {
-    console.log(err);
-  }
+        DELETE FROM Book
+        WHERE BookID = ${id};`;
+
+    try {
+      await trx.raw(nullifyBookAuthorMappingQuery);
+      await trx.raw(nullifyBookGenreMappingQuery);
+      await trx.raw(query);
+      res.status(200).json({ message: "Book deleted successfully" });
+      return;
+    } catch (err) {
+      console.error(err);
+      trx.rollback();
+      res.status(500).json({ error: "Error deleting book" });
+    }
+    trx.commit();
+  });
 };
 
 exports.addNewBook = (req, res) => {
@@ -152,7 +153,7 @@ exports.addNewBook = (req, res) => {
     !publicationyear ||
     !publishername ||
     !authorid ||
-    !genres
+    genres.length == 0
   ) {
     return res.status(400).json("incorrect form submission");
   }
@@ -173,8 +174,6 @@ exports.addNewBook = (req, res) => {
                 VALUES ((SELECT BookID FROM Book WHERE bookname = '${bookname}'), ${genreid});
             `);
         });
-
-        // Execute genreQueries in parallel using Promise.all
         return Promise.all(genreQueries);
       })
       .then(() => {
