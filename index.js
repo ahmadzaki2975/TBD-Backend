@@ -34,6 +34,9 @@ app.use("/publishers", publisherRoutes);
 const genreRoutes = require("./routes/genres");
 app.use("/genres", genreRoutes);
 
+const sqlRoutes = require("./routes/sql");
+app.use("/sql", sqlRoutes);
+
 app.listen(5000, () => {
   console.log("Server is running on port 5000");
 });
