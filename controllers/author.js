@@ -12,7 +12,7 @@ const db = knex({
   },
 });
 
-exports.getAuthors = (req, res) => {
+exports.getAuthors = async (req, res) => {
   try {
     const query = `
         SELECT * FROM Author`;
@@ -29,7 +29,7 @@ exports.getAuthors = (req, res) => {
   }
 };
 
-exports.getAuthorById = (req, res) => {
+exports.getAuthorById = async (req, res) => {
   const { id } = req.params;
   try {
     const query = `
@@ -47,7 +47,7 @@ exports.getAuthorById = (req, res) => {
   }
 };
 
-exports.getWrittenBooks = (req, res) => {
+exports.getWrittenBooks = async (req, res) => {
   const { id } = req.params;
   try {
     const query = `SELECT * FROM Book WHERE 
@@ -65,4 +65,34 @@ exports.getWrittenBooks = (req, res) => {
   } catch (err) {
     console.log(err);
   }
+};
+
+exports.postNewAuthor = async (req, res) => {
+  const { authorname, yearborn } = req.body;
+  let { yeardied } = req.body;
+  console.log(authorname, yeardied, yearborn);
+  if (!authorname || !yearborn) {
+    res.status(400).json("Invalid request");
+    return;
+  }
+  if (yeardied == 0) {
+    yeardied = "NULL";
+  }
+  db.transaction((trx) => {
+    const query = `INSERT INTO Author (AuthorName, YearDied, YearBorn)
+    VALUES ('${authorname}', ${yeardied}, ${yearborn});`;
+    trx
+      .raw(query)
+      .then((data) => {
+        res.status(200).json("Author added");
+        return;
+      })
+      .then(trx.commit)
+      .catch((err) => {
+        console.log(err);
+        trx.rollback();
+        res.status(500).json(err);
+        return;
+      });
+  });
 };
