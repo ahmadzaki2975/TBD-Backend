@@ -94,6 +94,7 @@ exports.updateBookById = async (req, res) => {
     await trx.raw(bookAuthorMappingQuery);
     await trx.commit();
     res.status(200).json({ message: "Book updated successfully" });
+    return;
   } catch (err) {
     console.error(err);
     if (trx) {
