@@ -95,11 +95,23 @@ exports.updateBookById = (req, res) => {
 exports.deleteBookById = (req, res) => {
   const { id } = req.params;
   try {
+    const nullifyBookAuthorMappingQuery = `
+    UPDATE BookAuthorMapping
+    SET BookID = NULL
+    WHERE BookID = ${id}
+    ;`;
+    const nullifyBookGenreMappingQuery = `
+    UPDATE BookGenreMapping
+    SET BookID = NULL
+    WHERE BookID = ${id}
+    ;`;
     const query = `
     DELETE FROM Book
     WHERE BookID = ${id}
     ;`;
-    db.raw(query)
+    db.raw(nullifyBookAuthorMappingQuery)
+      .then(() => db.raw(nullifyBookGenreMappingQuery))
+      .then(() => db.raw(query))
       .then((data) => {
         res.status(200).json(data);
       })
