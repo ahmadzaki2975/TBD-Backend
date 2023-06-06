@@ -13,7 +13,8 @@ const db = knex({
 });
 
 exports.getCustomers = async (req, res) => {
-  const query = `
+  try {
+    const query = `
         SELECT * FROM Customer`;
   db.transaction((trx) => {
     trx
@@ -28,4 +29,8 @@ exports.getCustomers = async (req, res) => {
         return;
       });
   });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json(err);
+  }
 };
