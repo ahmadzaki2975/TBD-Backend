@@ -33,6 +33,8 @@ const publisherRoutes = require("./routes/publisher");
 app.use("/publishers", publisherRoutes);
 const genreRoutes = require("./routes/genres");
 app.use("/genres", genreRoutes);
+const customerRoutes = require("./routes/customer");
+app.use("/customers", customerRoutes);
 
 const sqlRoutes = require("./routes/sql");
 app.use("/sql", sqlRoutes);
