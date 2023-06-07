@@ -21,7 +21,7 @@ app.use(
 app.use(bodyParser.json())
 
 app.get("/", (req, res) => {
-  res.send("API TBD v0.0.1 - Ahmad Zaki Akmal");
+  res.send("API TBD v1.0.0 - Ahmad Zaki Akmal");
 });
 
 // ? Routes
