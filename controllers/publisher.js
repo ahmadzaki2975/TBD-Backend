@@ -34,7 +34,10 @@ exports.getPublisherById = (req, res) => {
   const { publishername } = req.params;
 
   const query = `
-    SELECT * FROM Publisher WHERE PublisherName = '${publishername}'`;
+  SELECT publisher.*, book.bookname
+  FROM Publisher
+  INNER JOIN Book ON Publisher.PublisherName = Book.PublisherName
+  WHERE Publisher.PublisherName = '${publishername}'; `;
 
   db.transaction((trx) => {
     trx
@@ -50,23 +53,23 @@ exports.getPublisherById = (req, res) => {
 };
 
 exports.deletePublisherById = (req, res) => {
-	const { publishername } = req.params;
+  const { publishername } = req.params;
 
-	const query = `
+  const query = `
 		DELETE FROM Publisher WHERE publishername = '${publishername}'`;
 
-	db.transaction((trx) => {
-		trx
-			.raw(query)
-			.then((data) => {
-				trx.commit();
-				res.status(200).json(data.rows);
-				return;
-			})
-			.catch((err) => {
-				console.log(err);
-				trx.rollback();
-				res.status(500).json(err);
-			});
-	});
-}
+  db.transaction((trx) => {
+    trx
+      .raw(query)
+      .then((data) => {
+        trx.commit();
+        res.status(200).json(data.rows);
+        return;
+      })
+      .catch((err) => {
+        console.log(err);
+        trx.rollback();
+        res.status(500).json(err);
+      });
+  });
+};
