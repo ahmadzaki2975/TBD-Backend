@@ -37,6 +37,8 @@ const customerRoutes = require("./routes/customer");
 app.use("/customers", customerRoutes);
 const storeRouter = require("./routes/stores");
 app.use("/stores", storeRouter);
+const staffRouter = require("./routes/staffs");
+app.use("/staffs", staffRouter);
 
 const sqlRoutes = require("./routes/sql");
 app.use("/sql", sqlRoutes);
